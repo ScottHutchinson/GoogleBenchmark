@@ -103,4 +103,57 @@ static void BM_Concat_ShortString(benchmark::State& state) {
 }
 BENCHMARK(BM_Concat_ShortString);
 
+struct Sample_t {
+    uint8_t flag;
+    char pad[3];
+    int id;
+    double value;
+    char name[256];
+};
+
+static constexpr size_t MAX_DST{ 300'000 };
+static char dst_buffer[MAX_DST]{};
+static char tmp_buffer[MAX_DST]{};
+
+static void initBuffers() {
+    std::ranges::fill(dst_buffer, '\0');
+    std::ranges::fill(tmp_buffer, '\0');
+}
+
+static Sample_t sample{
+    1,
+    {0,0,0},
+    12345,
+    99.99,
+    "Sample Name"
+};
+
+static void doYesOrNo(char* dst, const char* lbl, const uint8_t flag) {
+    strcat_s(dst, MAX_DST, lbl);
+    const auto yesOrNo = (flag == 0) ? "No" : "Yes";
+    strcat_s(dst, MAX_DST, yesOrNo);
+}
+
+static void doCharArray(char* dst, const char* lbl, const char* src) {
+    strcat_s(dst, MAX_DST, lbl);
+    strcat_s(dst, MAX_DST, src);
+}
+
+static void GML_strcat(benchmark::State& state) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        // This runs EVERY iteration (once per loop)
+        initBuffers();
+        state.ResumeTiming();
+        doYesOrNo(dst_buffer, ";$Flag Value:$ ", sample.flag);
+        sprintf_s(tmp_buffer, MAX_DST, ";$Launcher ID:$ %d", sample.id); strcat_s(dst_buffer, MAX_DST, tmp_buffer);
+        sprintf_s(tmp_buffer, MAX_DST, ";$Predicted Intercept Range:$ %.3f dm", sample.value); strcat_s(dst_buffer, MAX_DST, tmp_buffer);
+        doCharArray(dst_buffer, ";$Platform Name:$ ", sample.name);
+        benchmark::DoNotOptimize(dst_buffer);
+        benchmark::DoNotOptimize(tmp_buffer);
+    }
+}
+
+BENCHMARK(GML_strcat);
+
 BENCHMARK_MAIN();
