@@ -4,6 +4,8 @@
 #include <sstream>
 #include <format>  // C++20
 #include <stdio.h>
+#include <stdarg.h>
+#include <iostream>
 
 // Method 1: std::ostringstream
 static void BM_Ostringstream(benchmark::State& state) {
@@ -157,6 +159,34 @@ static void GML_sprintf(benchmark::State& state) {
 }
 
 BENCHMARK(GML_sprintf);
+
+char* sprintf_p(char* dst, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    int ret = vsprintf_s(dst, MAX_DST, format, args); // TODO: The actual remaining size will often be less than MAX_DST.
+    va_end(args);
+    return (ret < 0) ? nullptr : dst + ret;
+}
+
+static void GML_sprintf_p(benchmark::State& state) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        // This runs EVERY iteration (once per loop)
+        initBuffers();
+        state.ResumeTiming();
+        auto pEnd = dst_buffer + strlen(dst_buffer);
+        const auto yesOrNo = (sample.flag == 0) ? "No" : "Yes";
+        // TODO: Keep track of the size of dst_buffer remaining after pEnd.
+        pEnd = sprintf_p(pEnd, ";$Flag Value:$ %s", yesOrNo);
+        pEnd = sprintf_p(pEnd, ";$Launcher ID:$ %d", sample.id);
+        pEnd = sprintf_p(pEnd, ";$Predicted Intercept Range:$ %.3f dm", sample.value);
+        pEnd = sprintf_p(pEnd, ";$Platform Name:$ %s", sample.name);
+        benchmark::DoNotOptimize(dst_buffer);
+        benchmark::DoNotOptimize(tmp_buffer);
+    }
+}
+
+BENCHMARK(GML_sprintf_p);
 
 static void GML_std_format(benchmark::State& state) {
     for (auto _ : state) {
