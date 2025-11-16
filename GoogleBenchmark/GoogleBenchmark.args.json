@@ -5,6 +5,10 @@
     {
       "Id": "19f39e07-57bf-45a5-8f1d-a411fc30ae0e",
       "Command": "--benchmark_filter=GML"
+    },
+    {
+      "Id": "f9c5250d-9f1a-4313-99dd-e07eefd42e57",
+      "Command": "--benchmark_filter=GML_std_format_to"
     }
   ]
 }

@@ -139,7 +139,7 @@ static void doCharArray(char* dst, const char* lbl, const char* src) {
     strcat_s(dst, MAX_DST, src);
 }
 
-static void GML_strcat(benchmark::State& state) {
+static void GML_sprintf(benchmark::State& state) {
     for (auto _ : state) {
         state.PauseTiming();
         // This runs EVERY iteration (once per loop)
@@ -154,6 +154,48 @@ static void GML_strcat(benchmark::State& state) {
     }
 }
 
-BENCHMARK(GML_strcat);
+BENCHMARK(GML_sprintf);
+
+static void GML_std_format(benchmark::State& state) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        // This runs EVERY iteration (once per loop)
+        initBuffers();
+        state.ResumeTiming();
+        const auto yesOrNo = (sample.flag == 0) ? "No" : "Yes";
+        const auto flagStr = std::format(";$Flag Value:$ {:s}", yesOrNo);
+        strcat_s(dst_buffer, MAX_DST, flagStr.c_str());
+        const auto idStr = std::format(";$Launcher ID:$ {}", sample.id);
+        strcat_s(dst_buffer, MAX_DST, idStr.c_str());
+        const auto interceptStr = std::format(";$Predicted Intercept Range:$ {:.3f} dm", sample.value);
+        strcat_s(dst_buffer, MAX_DST, interceptStr.c_str());
+        const auto nameStr = std::format(";$Platform Name:$ {}", sample.name);
+        strcat_s(dst_buffer, MAX_DST, nameStr.c_str());
+        benchmark::DoNotOptimize(dst_buffer);
+        benchmark::DoNotOptimize(tmp_buffer);
+    }
+}
+
+BENCHMARK(GML_std_format);
+
+static void GML_std_format_to(benchmark::State& state) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        // This runs EVERY iteration (once per loop)
+        initBuffers();
+        state.ResumeTiming();
+        auto pEnd = dst_buffer + strlen(dst_buffer);
+        const auto yesOrNo = (sample.flag == 0) ? "No" : "Yes";
+        pEnd = std::format_to(pEnd, ";$Flag Value:$ {:s}", yesOrNo);
+        pEnd = std::format_to(pEnd, ";$Launcher ID:$ {}", sample.id);
+        pEnd = std::format_to(pEnd, ";$Predicted Intercept Range:$ {:.3f} dm", sample.value);
+        pEnd = std::format_to(pEnd, ";$Platform Name:$ {}", sample.name);
+        *pEnd = '\0'; // Null-terminate
+        benchmark::DoNotOptimize(dst_buffer);
+        benchmark::DoNotOptimize(tmp_buffer);
+    }
+}
+
+BENCHMARK(GML_std_format_to);
 
 BENCHMARK_MAIN();
