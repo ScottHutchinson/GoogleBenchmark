@@ -1,4 +1,5 @@
 #include <benchmark/benchmark.h>
+#include "fmt/core.h"
 #include <string>
 #include <sstream>
 #include <format>  // C++20
@@ -197,5 +198,47 @@ static void GML_std_format_to(benchmark::State& state) {
 }
 
 BENCHMARK(GML_std_format_to);
+
+static void GML_fmt_format(benchmark::State& state) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        // This runs EVERY iteration (once per loop)
+        initBuffers();
+        state.ResumeTiming();
+        const auto yesOrNo = (sample.flag == 0) ? "No" : "Yes";
+        const auto flagStr = fmt::format(";$Flag Value:$ {:s}", yesOrNo);
+        strcat_s(dst_buffer, MAX_DST, flagStr.c_str());
+        const auto idStr = fmt::format(";$Launcher ID:$ {}", sample.id);
+        strcat_s(dst_buffer, MAX_DST, idStr.c_str());
+        const auto interceptStr = fmt::format(";$Predicted Intercept Range:$ {:.3f} dm", sample.value);
+        strcat_s(dst_buffer, MAX_DST, interceptStr.c_str());
+        const auto nameStr = fmt::format(";$Platform Name:$ {}", sample.name);
+        strcat_s(dst_buffer, MAX_DST, nameStr.c_str());
+        benchmark::DoNotOptimize(dst_buffer);
+        benchmark::DoNotOptimize(tmp_buffer);
+    }
+}
+
+BENCHMARK(GML_fmt_format);
+
+static void GML_fmt_format_to(benchmark::State& state) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        // This runs EVERY iteration (once per loop)
+        initBuffers();
+        state.ResumeTiming();
+        auto pEnd = dst_buffer + strlen(dst_buffer);
+        const auto yesOrNo = (sample.flag == 0) ? "No" : "Yes";
+        pEnd = fmt::format_to(pEnd, ";$Flag Value:$ {:s}", yesOrNo);
+        pEnd = fmt::format_to(pEnd, ";$Launcher ID:$ {}", sample.id);
+        pEnd = fmt::format_to(pEnd, ";$Predicted Intercept Range:$ {:.3f} dm", sample.value);
+        pEnd = fmt::format_to(pEnd, ";$Platform Name:$ {}", sample.name);
+        *pEnd = '\0'; // Null-terminate
+        benchmark::DoNotOptimize(dst_buffer);
+        benchmark::DoNotOptimize(tmp_buffer);
+    }
+}
+
+BENCHMARK(GML_fmt_format_to);
 
 BENCHMARK_MAIN();
