@@ -120,7 +120,7 @@ static char tmp_buffer[MAX_DST]{};
 
 static void initBuffers() {
     std::ranges::fill(dst_buffer, '\0');
-    std::ranges::fill_n(dst_buffer, 100'000, ' ');
+    std::ranges::fill_n(dst_buffer, 1'000, ' ');
     std::ranges::fill(tmp_buffer, '\0');
 }
 

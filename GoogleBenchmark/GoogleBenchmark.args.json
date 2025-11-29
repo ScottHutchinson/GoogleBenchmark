@@ -3,7 +3,19 @@
   "Id": "cc67c98d-4f3c-4de1-838c-b4e4258c445a",
   "Items": [
     {
+      "Id": "270c686f-66f8-4048-a262-ed321cb15c9e",
+      "Command": "--benchmark_repetitions=3"
+    },
+    {
+      "Id": "58b8fbfb-0356-4814-99ba-6bc557a7253e",
+      "Command": "--benchmark_report_aggregates_only=true"
+    },
+    {
       "Id": "19f39e07-57bf-45a5-8f1d-a411fc30ae0e",
+      "Command": "--benchmark_filter=DE_"
+    },
+    {
+      "Id": "f897b749-59ec-45c5-9666-d60d713d4ebd",
       "Command": "--benchmark_filter=GML"
     },
     {
